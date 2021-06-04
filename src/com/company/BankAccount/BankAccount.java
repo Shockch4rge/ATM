@@ -1,5 +1,9 @@
 package com.company.BankAccount;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Scanner;
+
 
 public class BankAccount {
 
@@ -18,8 +22,9 @@ public class BankAccount {
         this.accountNumber = _accountNumber;
         this.password = _password;
         this.accountType = _accountType;
-        this.balance = 0.0;
         this.activation = false;
+
+        initialise();
     }
 
     public void nav() {
@@ -30,7 +35,6 @@ public class BankAccount {
         System.out.println("1. Deposit" +
                 "\n2. Withdraw");
         directory();
-
     }
 
     public boolean checkPassword() {
@@ -58,17 +62,56 @@ public class BankAccount {
         System.out.println("Session ended.");
     }
 
-    public double creditAccount() { return this.balance += scanner.nextDouble(); }
-    public double debitAccount() { return this.balance -= scanner.nextDouble(); }
+    public void creditAccount() {
+        this.balance += scanner.nextDouble();
+        try {
+            FileWriter writer = new FileWriter(this.getFileName());
+            writer.write(String.valueOf(this.balance));
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
 
+    public void debitAccount() {
+        this.balance -= scanner.nextDouble();
+        try {
+            FileWriter writer = new FileWriter(this.getFileName());
+            writer.write(String.valueOf(this.balance));
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
+
+    public String getFileName() { return this.nric + ".txt"; }
     public double getBalance() { return this.balance; }
     public String getName() { return this.name; }
     public String getNric() { return this.nric; }
     public String getAccountNumber() { return this.accountNumber; }
     public String getAccountType() { return this.accountType; }
-    public boolean setActivation() { return this.activation = true; }
+    public void setActivation() { this.activation = true; }
 
+    public void initialise() {
+        // Get previous bank balance if it exists
+        try {
+            File balance = new File(this.getFileName());
+            Scanner reader = new Scanner(balance);
+            String data = reader.nextLine();
+            try {
+                this.balance = Double.parseDouble(data);
+            } catch (NumberFormatException e) {
+                balance.delete();
+                this.balance = 0;
+            }
 
+        } catch (IOException e) {
+            System.out.println("No previous balance for " + this.nric + " exists.");
+            this.balance = 0;
+        }
+    }
 
 
 //    public void transferAccount(double amountToTransfer, BankAccount transferTo) {
